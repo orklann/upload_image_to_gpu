@@ -1,0 +1,36 @@
+<html>
+    <head>
+    <script>
+        function upload() {
+            var canvas = document.getElementById('can');
+            var gl = canvas.getContext('webgl');
+            var imageSize = 233293;
+            var uploadSize = 6.5 * 1024 * 1024 * 1024; // upload 6.5G to gpu
+            var n = uploadSize / imageSize;
+            console.log("n = ", n);
+            var image = new Image();
+            image.crossOrigin = "anonymous";
+            //image.src = 'http://i.imgur.com/9Tq28Qj.jpg?1';
+            image.src = './screen.png'
+            function upload_image() {
+                var texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                console.log(Date.now());
+            }
+
+            image.addEventListener('load', function () {
+                for (var i = 0; i <= n; i++) {
+                    setTimeout(upload_image, 0.3 * 1000);
+                }
+            });
+        }
+    </script>
+    </head>
+
+    <body onload="upload();">
+      Uploading to GPU...
+      <canvas id="can"></canvas>
+    </body>
+
+</html>

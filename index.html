@@ -1,36 +1,51 @@
 <html>
     <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r82/three.min.js" charset="utf-8"></script>
     <script>
         function upload() {
-            var canvas = document.getElementById('can');
-            var gl = canvas.getContext('webgl');
-            var imageSize = 233293;
-            var uploadSize = 6.5 * 1024 * 1024 * 1024; // upload 6.5G to gpu
-            var n = uploadSize / imageSize;
-            console.log("n = ", n);
-            var image = new Image();
-            image.crossOrigin = "anonymous";
-            //image.src = 'http://i.imgur.com/9Tq28Qj.jpg?1';
-            image.src = './screen.png'
-            function upload_image() {
-                var texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                console.log(Date.now());
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+
+            const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            const imageSize = 233293;
+            const GB = 6 * 1024 * 1024 * 1024;
+            const n = GB / imageSize / 200 * 4;
+            for (var i = 0; i <= n; i++) {
+                // Load lots of texture to gpu
+                let loader = new THREE.TextureLoader();
+                let texture = loader.load("./screen.png"); // path of texture
+                texture.magFilter = THREE.NearestFilter;
+                texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+                let mesh = new THREE.Mesh(
+                  geometry,
+                  new THREE.MeshLambertMaterial({
+                    map: texture,
+                    vertexColors: THREE.VertexColors,
+                    side: THREE.DoubleSide
+                  })
+                );
+                scene.add(mesh);
             }
 
-            image.addEventListener('load', function () {
-                for (var i = 0; i <= n; i++) {
-                    setTimeout(upload_image, 0.3 * 1000);
-                }
-            });
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame( animate );
+                renderer.render( scene, camera );
+            };
+
+            animate();
         }
     </script>
     </head>
 
     <body onload="upload();">
       Uploading to GPU...
-      <canvas id="can"></canvas>
     </body>
 
 </html>
